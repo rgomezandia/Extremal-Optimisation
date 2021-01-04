@@ -5,6 +5,7 @@
 import sys
 import random
 import re
+import copy
 
 class Objeto: #CASO DE PRUEBA EXTRAIDO DE EXCEL
     def __init__(self):
@@ -112,27 +113,19 @@ def selecEspecieRuleta(valores):
                 seleccion = x
     return seleccion  # devuelvo el individuo seleccionado
 
-def reemplazoEspecie(vectorProb, primeraSolucion, objetos):
+def reemplazoEspecie(vectorProb, primeraSolucion):
     seleccion = selecEspecieRuleta(vectorProb)
-    while (primeraSolucion.estado[
-               seleccion] == 0):  # Esta condicion la he agregado yo, dado que no gano nada al seleccionar un elemento que no esta en la mochila
-        seleccion = selecEspecieRuleta(vectorProb)
+    #while (primeraSolucion.estado[seleccion] == 0):  # Esta condicion la he agregado yo, Pero genera problemas a la larga... que hacer...
+    #    seleccion = selecEspecieRuleta(vectorProb)
     primeraSolucion.estado[seleccion] = 0
 
     cambio = numRandomicoUnoToN(50) - 1
-    while (cambio != seleccion):
+    while (cambio == seleccion):
         cambio = numRandomicoUnoToN(50) - 1
     if(primeraSolucion.estado[cambio] == 1):
         primeraSolucion.estado[cambio] = 0
     else:
         primeraSolucion.estado[cambio] = 1
-
-    #He añadido una modificacion aqui extra
-   # if(evaluarEcosistema(primeraSolucion,objetos)):
-    #    cambio = numRandomicoUnoToN(50) - 1
-     #   while (primeraSolucion.estado[cambio] == 1 and cambio != seleccion):
-      #      cambio = numRandomicoUnoToN(50) - 1
-       # primeraSolucion.estado[cambio] = 1
 
 
 def generarVectorProb(tamano):
@@ -191,25 +184,23 @@ if __name__ == "__main__":
     objetosMochila = lecturaArchivo(sys.argv[1]) #Archivo de entrada procesado
     semilla = int(sys.argv[2]) #Semilla
     condTermOnumIts = int(sys.argv[3]) #Condicion de termino o numero de iteraciones
-    tau = float(sys.argv[4]) #Probabilidad de
+    tau = float(sys.argv[4]) #Probabilidad
     xBest = 0
 
     random.seed(semilla)  # Asignamos la semilla al random.
     primeraSolucion = initEcosistema(objetosMochila)
     if(evaluarEcosistema(primeraSolucion,objetosMochila)):
-        xBest = primeraSolucion
+        xBest = copy.copy(primeraSolucion)
     vectorProb = generarVectorProb(objetosMochila.tamano)
 
     for x in range(condTermOnumIts):
-        print(x)
         primeraSolucion.ordenarPeorAMejor() #Se rankea y ordena del peor al mejor
-        reemplazoEspecie(vectorProb, primeraSolucion, objetosMochila) #Se hace el reemplazo
+        reemplazoEspecie(vectorProb, primeraSolucion) #Se hace el reemplazo
         if(evaluarEcosistema(primeraSolucion,objetosMochila)):
-            if(primeraSolucion.factible):
-                if(xBest == 0):
-                    xBest = primeraSolucion
-                elif(xBest.precioTotal<primeraSolucion.precioTotal):
-                    xBest = primeraSolucion
+            if(xBest == 0):
+                xBest = copy.copy(primeraSolucion)
+            if(xBest.precioTotal<primeraSolucion.precioTotal):
+                xBest = copy.copy(primeraSolucion)
 
     if(xBest == 0):
         print("NO se pudo encontrar una solucion FACTIBLE")
@@ -217,17 +208,6 @@ if __name__ == "__main__":
         print("La solucion encontrada es la siguiente:\n")
         xBest.verTodo()
 
-
-
-
-
-     #Nos da el indice de 0 - N debemos sumarle uno para compararlo con el indice de la solucion.
-
-        #evaluarFitnessEspecie(primeraSolucion,objetosMochila,tau)
-
-        #Reordenamiento solucion, en consideracion a que el valor mas bajo es malo.
-
- #del peor al mejor
 
 
 
