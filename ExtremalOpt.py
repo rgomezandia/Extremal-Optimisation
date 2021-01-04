@@ -19,7 +19,7 @@ class Objeto: #CASO DE PRUEBA EXTRAIDO DE EXCEL
         self.precioTotal = 0
 
     def imprime(self):
-        print("id:", self.id,"peso:",self.peso, "precio:", self.precio)
+        print("id:", self.id,"\npeso:",self.peso, "\nprecio:", self.precio,"\nlimite:", self.limitePeso)
 
     def agregarObjeto(self,id,peso,precio):
         self.id.append(id)
@@ -38,7 +38,7 @@ class Objeto: #CASO DE PRUEBA EXTRAIDO DE EXCEL
 class Solucion:
     def __init__(self):
         self.indice = []
-        self.estado = []
+        self.estado = [] #0 1 0 1 0 0 1
         self.peso = []
         self.precio = []
         self.fitness = []
@@ -118,24 +118,14 @@ def selecEspecieRuleta(valores):
         else:
             if seleccionAleatorio > valores[x - 1] and seleccionAleatorio < valores[x]:
                 seleccion = x
-    return seleccion  # devuelvo el individuo seleccionado
+    return seleccion  # devuelvo pocision
 
 def reemplazoEspecie(vectorProb, primeraSolucion):
     seleccion = selecEspecieRuleta(vectorProb)
-    while (primeraSolucion.estado[seleccion] == 0 and primeraSolucion.conteoUnosEstado()>1):  # Esta condicion la he agregado yo, Pero me genera duda... siempre debo sacar uno?, no es eso malo? no me va a limitar?
-        seleccion = selecEspecieRuleta(vectorProb)
-    primeraSolucion.estado[seleccion] = 0
-
-    #En el video decia que era asi, sin embargo si es asi, puede que al final termine siempre con incluso un solo uno, y si solo cambio los
-    #ceros a uno, entonce siempre tendre la misma cantidad de ceros y unos
-    cambio = numRandomicoUnoToN(50) - 1
-    while (cambio == seleccion):
-        cambio = numRandomicoUnoToN(50) - 1
-    if(primeraSolucion.estado[cambio] == 1):
-        primeraSolucion.estado[cambio] = 0
+    if(primeraSolucion.estado[seleccion] == 1):
+        primeraSolucion.estado[seleccion] = 0
     else:
-        primeraSolucion.estado[cambio] = 1
-
+        primeraSolucion.estado[seleccion] = 1
 
 def generarVectorProb(tamano):
     vectorProb = []
@@ -143,6 +133,7 @@ def generarVectorProb(tamano):
     for x in range(tamano):
         vectorProb.append((x+1)**(-tau))
         suma += vectorProb[x]
+    #Procesamiento para ruleta
     for x in range(tamano):
         vectorProb[x] = vectorProb[x]/suma
     for x in range(tamano):
@@ -191,6 +182,7 @@ if __name__ == "__main__":
     #INICIALIZACION
 
     objetosMochila = lecturaArchivo(sys.argv[1]) #Archivo de entrada procesado
+    objetosMochila.imprime()
     #PARAMETROS UTILIZADOS
     #knapPI_1_50_1000.csv 3 1000 1.4
     semilla = int(sys.argv[2]) #Semilla
@@ -199,15 +191,15 @@ if __name__ == "__main__":
     xBest = 0
 
     random.seed(semilla)  # Asignamos la semilla al random.
-    primeraSolucion = initEcosistema(objetosMochila)
+    primeraSolucion = initEcosistema(objetosMochila) #                                          PUNTO 1
     if(evaluarEcosistema(primeraSolucion,objetosMochila)):
-        xBest = copy.copy(primeraSolucion)
-    vectorProb = generarVectorProb(objetosMochila.tamano)
+        xBest = copy.copy(primeraSolucion) #                                                    PUNTO 2
+    vectorProb = generarVectorProb(objetosMochila.tamano) #                                     PUNTO 3
 
-    for x in range(condTermOnumIts):
-        primeraSolucion.ordenarPeorAMejor() #Se rankea y ordena del peor al mejor
-        reemplazoEspecie(vectorProb, primeraSolucion) #Se hace el reemplazo
-        if(evaluarEcosistema(primeraSolucion,objetosMochila)):
+    for x in range(condTermOnumIts): #                                                          PUNTO 4
+        primeraSolucion.ordenarPeorAMejor() #Se rankea y ordena del peor al mejor               PUNTO 5
+        reemplazoEspecie(vectorProb, primeraSolucion) #Se hace el reemplazo                     PUNTO 6 Y 7
+        if(evaluarEcosistema(primeraSolucion,objetosMochila)): #                                PUNTO 8 Y 9
             if(xBest == 0):
                 xBest = copy.copy(primeraSolucion)
             if(xBest.precioTotal<primeraSolucion.precioTotal):
@@ -216,14 +208,5 @@ if __name__ == "__main__":
     if(xBest == 0):
         print("NO se pudo encontrar una solucion FACTIBLE")
     else:
-        print("La solucion encontrada es la siguiente:\n")
+        print("\nLa solucion encontrada es la siguiente:\n")
         xBest.verTodo()
-
-
-
-
-
-
-
-
-
