@@ -73,6 +73,13 @@ class Solucion:
                 suma += 1
         return suma
 
+    def conteoCerosEstado(self):
+        suma = 0
+        for x in range(len(self.estado)):
+            if(self.estado[x]==0):
+                suma += 1
+        return suma
+
     def verTodo(self):
         print("Indice:",self.indice, "\nEstado o solucion:", self.estado, "\nPrecio", self.precio, "\nPeso", self.peso, "\nFitness", self.fitness, "\nPrecio Total:",self.precioTotal,"\nPeso Total:",self.pesoTotal,"\nFactibilidad:",self.factible)
 
@@ -115,10 +122,12 @@ def selecEspecieRuleta(valores):
 
 def reemplazoEspecie(vectorProb, primeraSolucion):
     seleccion = selecEspecieRuleta(vectorProb)
-    #while (primeraSolucion.estado[seleccion] == 0):  # Esta condicion la he agregado yo, Pero genera problemas a la larga... que hacer...
-    #    seleccion = selecEspecieRuleta(vectorProb)
+    while (primeraSolucion.estado[seleccion] == 0 and primeraSolucion.conteoUnosEstado()>1):  # Esta condicion la he agregado yo, Pero me genera duda... siempre debo sacar uno?, no es eso malo? no me va a limitar?
+        seleccion = selecEspecieRuleta(vectorProb)
     primeraSolucion.estado[seleccion] = 0
 
+    #En el video decia que era asi, sin embargo si es asi, puede que al final termine siempre con incluso un solo uno, y si solo cambio los
+    #ceros a uno, entonce siempre tendre la misma cantidad de ceros y unos
     cambio = numRandomicoUnoToN(50) - 1
     while (cambio == seleccion):
         cambio = numRandomicoUnoToN(50) - 1
@@ -182,6 +191,8 @@ if __name__ == "__main__":
     #INICIALIZACION
 
     objetosMochila = lecturaArchivo(sys.argv[1]) #Archivo de entrada procesado
+    #PARAMETROS UTILIZADOS
+    #knapPI_1_50_1000.csv 3 1000 1.4
     semilla = int(sys.argv[2]) #Semilla
     condTermOnumIts = int(sys.argv[3]) #Condicion de termino o numero de iteraciones
     tau = float(sys.argv[4]) #Probabilidad
